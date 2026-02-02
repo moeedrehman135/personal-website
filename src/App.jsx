@@ -140,7 +140,7 @@ const Portfolio = () => {
         {activeSection === 'about' && (
           <div className="animate-fadeIn">
             <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
-              Hi, I'm Your Name
+              Hi, I'm Muhammad Moeed Ur Rehman Khan
             </h1>
             <p className="text-xl text-gray-600 mb-8 max-w-2xl leading-relaxed">
               Computer Science student passionate about building scalable systems and exploring 
