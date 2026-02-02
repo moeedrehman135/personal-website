@@ -148,13 +148,13 @@ const Portfolio = () => {
             </p>
             
             <div className="flex gap-4 mb-12">
-              <a href="https://github.com/yourusername" className="p-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors">
+              <a href="https://github.com/moeedrehman135" className="p-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors">
                 <Github size={24} />
               </a>
-              <a href="https://linkedin.com/in/yourusername" className="p-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors">
+              <a href="https://www.linkedin.com/in/moeed-rehman-abb025261/" className="p-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors">
                 <Linkedin size={24} />
               </a>
-              <a href="mailto:your.email@example.com" className="p-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors">
+              <a href="mailto:moeedrehman50eme@gmail.com" className="p-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors">
                 <Mail size={24} />
               </a>
             </div>
