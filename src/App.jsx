@@ -1,11 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Github, Linkedin, Mail, ExternalLink, ArrowUpRight, ArrowLeft, Calendar, Clock } from 'lucide-react';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import matter from 'gray-matter';
+import { Github, Linkedin, Mail, ExternalLink, ArrowUpRight, ArrowLeft, Calendar, Clock, Loader } from 'lucide-react';
+import { useArticles } from './hooks/useArticles';
 
-
-// Article Detail Page Component
+// Article Detail Component
 const ArticleDetail = ({ article, onBack }) => {
   return (
     <div className="animate-fadeIn">
@@ -17,55 +14,47 @@ const ArticleDetail = ({ article, onBack }) => {
         <span className="font-medium">Back to Articles</span>
       </button>
       
-      <article className="max-w-2xl">
-        <div className="mb-8">
+      <article className="max-w-3xl">
+        <div className="mb-12">
           <div className="flex gap-6 text-sm text-neutral-500 mb-6">
             <span className="flex items-center gap-2">
               <Calendar size={16} />
-              {article.date}
+              {new Date(article.date).toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+              })}
             </span>
             <span className="flex items-center gap-2">
               <Clock size={16} />
-              {article.readTime}
+              {article.readTime || '10 min read'}
             </span>
           </div>
           <h1 className="text-5xl md:text-6xl font-semibold text-white mb-6 leading-tight tracking-tight">
             {article.title}
           </h1>
+          {article.subtitle && (
+            <p className="text-xl text-neutral-400">{article.subtitle}</p>
+          )}
         </div>
 
-        <div className="prose prose-invert prose-lg max-w-none">
-          <div className="text-neutral-300 leading-relaxed space-y-6 text-lg">
-            {article.content.split('\n\n').map((paragraph, idx) => (
-              <p key={idx} className="leading-[1.8]">{paragraph}</p>
-            ))}
-          </div>
+        <div className="prose prose-invert max-w-none">
+          {/* Render markdown HTML */}
+          <div 
+            className="text-neutral-300 leading-relaxed space-y-6 text-lg prose prose-invert prose-headings:text-white prose-headings:font-semibold prose-p:leading-7 prose-a:text-blue-400 prose-a:hover:text-blue-300 prose-strong:text-white prose-code:text-orange-400 prose-code:bg-black/50 prose-code:px-2 prose-code:py-1 prose-code:rounded prose-blockquote:border-l-4 prose-blockquote:border-neutral-600 prose-blockquote:pl-4"
+            dangerouslySetInnerHTML={{ __html: article.html }}
+          />
         </div>
       </article>
     </div>
   );
 };
 
-function loadArticles() {
-  const context = require.context('./articles', false, /\.md$/);
-  
-  return context.keys().map((key, index) => {
-    const fileContent = context(key);
-    const { data, content } = matter(fileContent.default);
-    
-    return {
-      id: index,
-      ...data,
-      content
-    };
-  });
-}
-
-
 const Portfolio = () => {
   const [currentPage, setCurrentPage] = useState('home');
   const [selectedArticle, setSelectedArticle] = useState(null);
   const [scrolled, setScrolled] = useState(false);
+  const { articles, loading: articlesLoading } = useArticles();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -83,90 +72,25 @@ const Portfolio = () => {
   const projects = [
     {
       title: "Distributed Task Scheduler",
-      description: "Fault-tolerant distributed system for task scheduling using Go and Redis. Implements consensus algorithms for reliable task distribution across multiple nodes.",
+      description: "Fault-tolerant distributed system for task scheduling using Go and Redis.",
       tech: ["Go", "Redis", "Docker", "gRPC"],
       github: "https://github.com/moeedrehman135/task-scheduler",
       demo: "https://demo.example.com"
     },
     {
       title: "Real-time Chat Application",
-      description: "WebSocket-based chat application with end-to-end encryption and message persistence. Supports group chats, file sharing, and real-time presence indicators.",
+      description: "WebSocket-based chat application with end-to-end encryption and message persistence.",
       tech: ["React", "Node.js", "Socket.io", "MongoDB"],
       github: "https://github.com/moeedrehman135/chat-app",
       demo: "https://demo.example.com"
     },
     {
       title: "ML Image Classifier",
-      description: "Convolutional neural network achieving 94% accuracy on custom dataset. Deployed with FastAPI backend and containerized for production environments.",
+      description: "Convolutional neural network achieving 94% accuracy on custom dataset.",
       tech: ["Python", "TensorFlow", "Flask", "Docker"],
       github: "https://github.com/moeedrehman135/ml-classifier",
       demo: "https://demo.example.com"
     }
-  ];
-
-  const articles = [
-    {
-      id: 1,
-      title: "Understanding Consensus Algorithms in Distributed Systems",
-      date: "January 15, 2026",
-      readTime: "8 min read",
-      excerpt: "Exploring Raft and Paxos algorithms and their practical applications in modern distributed systems.",
-      content: `Distributed systems are the backbone of modern cloud infrastructure, but achieving consensus across multiple nodes remains one of computer science's most challenging problems.
-
-In this article, we'll dive deep into two fundamental consensus algorithms: Raft and Paxos. While Paxos has been the theoretical foundation for decades, Raft has gained popularity for its understandability and practical implementation.
-
-The CAP theorem tells us we can't have consistency, availability, and partition tolerance simultaneously. Consensus algorithms help us navigate these trade-offs intelligently.
-
-Raft simplifies the problem by electing a leader who manages all client requests. This asymmetry makes the algorithm easier to understand and implement compared to Paxos's more symmetric approach.
-
-We'll explore how these algorithms handle network partitions, leader elections, and log replication. Understanding these concepts is crucial for building reliable distributed systems that can withstand real-world failures.
-
-Modern databases like etcd and Consul use Raft under the hood, while Google's Spanner uses a Paxos variant. Knowing when to use each algorithm can make the difference between a system that scales gracefully and one that fails under load.`
-    },
-    {
-      id: 2,
-      title: "Optimizing React Performance: A Deep Dive",
-      date: "December 28, 2025",
-      readTime: "6 min read",
-      excerpt: "Advanced techniques to make your React applications blazing fast through memoization and code splitting.",
-      content: `React's virtual DOM is powerful, but it's not magic. Without proper optimization, even simple applications can become sluggish as they grow.
-
-The key to React performance lies in understanding when and why components re-render. Every state change triggers a re-render, but not every re-render needs to propagate through your entire component tree.
-
-React.memo is your first line of defense. By memoizing components, you prevent unnecessary re-renders when props haven't changed. But be careful—premature optimization can make your code harder to maintain without meaningful performance gains.
-
-useCallback and useMemo are equally important. Functions are recreated on every render, which can break memoization. Wrapping callbacks and expensive computations ensures referential equality across renders.
-
-Code splitting with React.lazy and Suspense allows you to load components on demand. This dramatically reduces initial bundle size, especially important for mobile users on slower connections.
-
-Virtual scrolling libraries like react-window can handle thousands of list items without performance degradation. Instead of rendering everything, they only render what's visible in the viewport.
-
-Profile first, optimize second. Use React DevTools Profiler to identify actual bottlenecks before refactoring. Many perceived performance issues are actually caused by network latency or inefficient algorithms, not React itself.`
-    },
-    {
-      id: 3,
-      title: "Building Scalable APIs with GraphQL",
-      date: "November 10, 2025",
-      readTime: "10 min read",
-      excerpt: "Why GraphQL is replacing REST for modern APIs and how to implement it effectively in production.",
-      content: `REST has served us well for decades, but modern applications demand more flexibility. GraphQL solves the over-fetching and under-fetching problems that plague REST APIs.
-
-With GraphQL, clients specify exactly what data they need. No more endpoints that return 80% unnecessary data or multiple round trips to assemble a single view.
-
-The schema is your contract. It documents your API, enables powerful tooling, and catches errors at compile time. Tools like GraphQL Code Generator can create TypeScript types directly from your schema.
-
-Resolvers are where the magic happens. Each field in your schema maps to a resolver function that knows how to fetch that data. This separation of concerns makes your API incredibly flexible.
-
-DataLoader solves the N+1 query problem through batching and caching. Without it, a simple query could trigger hundreds of database calls. With it, you batch requests and cache results within a single request context.
-
-Authentication and authorization in GraphQL require careful thought. Unlike REST where you can protect entire endpoints, GraphQL needs field-level security. Directives and middleware can enforce permissions at the resolver level.
-
-Subscriptions bring real-time capabilities to GraphQL. Using WebSockets, clients can subscribe to data changes and receive updates instantly. This is perfect for chat applications, live dashboards, and collaborative tools.
-
-Production GraphQL requires careful monitoring. Track query complexity, slow resolvers, and error rates. Tools like Apollo Studio provide observability into your GraphQL layer.`
-    }
-
-    
   ];
 
   const experience = [
@@ -174,13 +98,13 @@ Production GraphQL requires careful monitoring. Track query complexity, slow res
       role: "Software Engineering Intern",
       company: "Tech Company",
       period: "Summer 2025",
-      description: "Developed microservices for payment processing, reducing transaction latency by 40%. Worked with Kubernetes and implemented comprehensive monitoring solutions."
+      description: "Developed microservices for payment processing, reducing transaction latency by 40%."
     },
     {
       role: "Research Assistant",
       company: "University CS Lab",
       period: "2024 - Present",
-      description: "Researching optimization algorithms for large-scale graph neural networks. Published findings in peer-reviewed conference proceedings."
+      description: "Researching optimization algorithms for large-scale graph neural networks."
     }
   ];
 
@@ -251,22 +175,13 @@ Production GraphQL requires careful monitoring. Track query complexity, slow res
             </section>
 
             <section className="flex gap-3">
-              <a 
-                href="https://github.com/moeedrehman135" 
-                className="w-12 h-12 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center transition-all hover:scale-105 border border-white/10"
-              >
+              <a href="https://github.com/moeedrehman135" className="w-12 h-12 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center transition-all hover:scale-105 border border-white/10">
                 <Github size={20} className="text-white" />
               </a>
-              <a 
-                href="https://www.linkedin.com/in/moeed-rehman-abb025261/" 
-                className="w-12 h-12 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center transition-all hover:scale-105 border border-white/10"
-              >
+              <a href="https://www.linkedin.com/in/moeed-rehman-abb025261/" className="w-12 h-12 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center transition-all hover:scale-105 border border-white/10">
                 <Linkedin size={20} className="text-white" />
               </a>
-              <a 
-                href="mailto:moeedrehman50eme@gmail.com" 
-                className="w-12 h-12 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center transition-all hover:scale-105 border border-white/10"
-              >
+              <a href="mailto:moeedrehman50eme@gmail.com" className="w-12 h-12 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center transition-all hover:scale-105 border border-white/10">
                 <Mail size={20} className="text-white" />
               </a>
             </section>
@@ -279,10 +194,7 @@ Production GraphQL requires careful monitoring. Track query complexity, slow res
                     <h3 className="text-lg text-neutral-500 mb-4 font-medium">{category}</h3>
                     <div className="flex flex-wrap gap-3">
                       {items.map(skill => (
-                        <span 
-                          key={skill} 
-                          className="px-5 py-2 bg-white/5 border border-white/10 rounded-full text-sm text-neutral-300 hover:bg-white/10 hover:border-white/20 transition-all"
-                        >
+                        <span key={skill} className="px-5 py-2 bg-white/5 border border-white/10 rounded-full text-sm text-neutral-300 hover:bg-white/10 hover:border-white/20 transition-all">
                           {skill}
                         </span>
                       ))}
@@ -304,10 +216,7 @@ Production GraphQL requires careful monitoring. Track query complexity, slow res
             
             <div className="space-y-6">
               {projects.map((project, idx) => (
-                <div 
-                  key={idx} 
-                  className="group relative bg-white/[0.02] border border-white/10 rounded-3xl p-10 hover:bg-white/[0.04] hover:border-white/20 transition-all duration-500"
-                >
+                <div key={idx} className="group relative bg-white/[0.02] border border-white/10 rounded-3xl p-10 hover:bg-white/[0.04] hover:border-white/20 transition-all duration-500">
                   <div className="space-y-6">
                     <div className="flex justify-between items-start gap-8">
                       <div className="flex-1">
@@ -315,16 +224,10 @@ Production GraphQL requires careful monitoring. Track query complexity, slow res
                         <p className="text-neutral-400 leading-relaxed text-lg">{project.description}</p>
                       </div>
                       <div className="flex gap-3">
-                        <a 
-                          href={project.github}
-                          className="w-10 h-10 rounded-full bg-white/5 hover:bg-white flex items-center justify-center transition-all group/btn border border-white/10"
-                        >
+                        <a href={project.github} className="w-10 h-10 rounded-full bg-white/5 hover:bg-white flex items-center justify-center transition-all group/btn border border-white/10">
                           <Github size={18} className="text-white group-hover/btn:text-black transition-colors" />
                         </a>
-                        <a 
-                          href={project.demo}
-                          className="w-10 h-10 rounded-full bg-white/5 hover:bg-white flex items-center justify-center transition-all group/btn border border-white/10"
-                        >
+                        <a href={project.demo} className="w-10 h-10 rounded-full bg-white/5 hover:bg-white flex items-center justify-center transition-all group/btn border border-white/10">
                           <ExternalLink size={18} className="text-white group-hover/btn:text-black transition-colors" />
                         </a>
                       </div>
@@ -332,10 +235,7 @@ Production GraphQL requires careful monitoring. Track query complexity, slow res
                     
                     <div className="flex flex-wrap gap-2">
                       {project.tech.map(tech => (
-                        <span 
-                          key={tech} 
-                          className="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-xs text-neutral-400 font-medium"
-                        >
+                        <span key={tech} className="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-xs text-neutral-400 font-medium">
                           {tech}
                         </span>
                       ))}
@@ -355,40 +255,50 @@ Production GraphQL requires careful monitoring. Track query complexity, slow res
               <h2 className="text-6xl font-semibold tracking-tight">Articles</h2>
             </div>
             
-            <div className="space-y-6">
-              {articles.map((article) => (
-                <button
-                  key={article.id}
-                  onClick={() => setSelectedArticle(article)}
-                  className="group w-full text-left bg-white/[0.02] border border-white/10 rounded-3xl p-10 hover:bg-white/[0.04] hover:border-white/20 transition-all duration-500"
-                >
-                  <div className="flex justify-between items-start gap-8">
-                    <div className="flex-1 space-y-4">
-                      <h3 className="text-3xl font-semibold tracking-tight group-hover:text-neutral-300 transition-colors">
-                        {article.title}
-                      </h3>
-                      <p className="text-neutral-400 leading-relaxed text-lg">{article.excerpt}</p>
-                      <div className="flex gap-6 text-sm text-neutral-500">
-                        <span>{article.date}</span>
-                        <span>·</span>
-                        <span>{article.readTime}</span>
+            {articlesLoading ? (
+              <div className="flex items-center justify-center py-16">
+                <Loader size={32} className="text-neutral-400 animate-spin" />
+              </div>
+            ) : articles.length === 0 ? (
+              <div className="text-center py-16 text-neutral-400">
+                <p>No articles yet. Create one in src/articles/</p>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {articles.map((article) => (
+                  <button
+                    key={article.slug}
+                    onClick={() => setSelectedArticle(article)}
+                    className="group w-full text-left bg-white/[0.02] border border-white/10 rounded-3xl p-10 hover:bg-white/[0.04] hover:border-white/20 transition-all duration-500"
+                  >
+                    <div className="flex justify-between items-start gap-8">
+                      <div className="flex-1 space-y-4">
+                        <h3 className="text-3xl font-semibold tracking-tight group-hover:text-neutral-300 transition-colors">
+                          {article.title}
+                        </h3>
+                        <p className="text-neutral-400 leading-relaxed text-lg">{article.excerpt}</p>
+                        <div className="flex gap-6 text-sm text-neutral-500">
+                          <span>{new Date(article.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                          <span>•</span>
+                          <span>{article.readTime}</span>
+                        </div>
                       </div>
+                      <ArrowUpRight 
+                        size={24} 
+                        className="text-neutral-600 group-hover:text-white group-hover:translate-x-1 group-hover:-translate-y-1 transition-all flex-shrink-0" 
+                      />
                     </div>
-                    <ArrowUpRight 
-                      size={24} 
-                      className="text-neutral-600 group-hover:text-white group-hover:translate-x-1 group-hover:-translate-y-1 transition-all flex-shrink-0" 
-                    />
-                  </div>
-                </button>
-              ))}
-            </div>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
-        {/* Article Detail View */}
+        {/* Article Detail */}
         {currentPage === 'articles' && selectedArticle && (
           <ArticleDetail 
-            article={selectedArticle} 
+            article={selectedArticle}
             onBack={() => setSelectedArticle(null)}
           />
         )}
@@ -403,10 +313,7 @@ Production GraphQL requires careful monitoring. Track query complexity, slow res
             
             <div className="space-y-6">
               {experience.map((exp, idx) => (
-                <div 
-                  key={idx} 
-                  className="bg-white/[0.02] border border-white/10 rounded-3xl p-10 hover:bg-white/[0.04] hover:border-white/20 transition-all duration-500"
-                >
+                <div key={idx} className="bg-white/[0.02] border border-white/10 rounded-3xl p-10 hover:bg-white/[0.04] hover:border-white/20 transition-all duration-500">
                   <h3 className="text-3xl font-semibold mb-2 tracking-tight">{exp.role}</h3>
                   <div className="text-neutral-500 mb-6 text-lg">{exp.company} · {exp.period}</div>
                   <p className="text-neutral-400 leading-relaxed text-lg">{exp.description}</p>
