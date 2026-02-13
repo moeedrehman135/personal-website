@@ -4,6 +4,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import matter from 'gray-matter';
 
+
 // Article Detail Page Component
 const ArticleDetail = ({ article, onBack }) => {
   return (
@@ -45,35 +46,26 @@ const ArticleDetail = ({ article, onBack }) => {
   );
 };
 
-// Load markdown articles dynamically
 function loadArticles() {
   const context = require.context('./articles', false, /\.md$/);
-
-  const articles = context.keys().map((key, index) => {
+  
+  return context.keys().map((key, index) => {
     const fileContent = context(key);
-    const { data, content } = matter(fileContent.default || fileContent);
-
+    const { data, content } = matter(fileContent.default);
+    
     return {
       id: index,
       ...data,
       content
     };
   });
-
-  return articles.sort((a, b) => new Date(b.date) - new Date(a.date));
 }
+
 
 const Portfolio = () => {
   const [currentPage, setCurrentPage] = useState('home');
   const [selectedArticle, setSelectedArticle] = useState(null);
   const [scrolled, setScrolled] = useState(false);
-
-  const [articles, setArticles] = useState([]);
-
-  useEffect(() => {
-    // Load markdown articles dynamically
-    setArticles(loadArticles());
-  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -110,6 +102,71 @@ const Portfolio = () => {
       github: "https://github.com/moeedrehman135/ml-classifier",
       demo: "https://demo.example.com"
     }
+  ];
+
+  const articles = [
+    {
+      id: 1,
+      title: "Understanding Consensus Algorithms in Distributed Systems",
+      date: "January 15, 2026",
+      readTime: "8 min read",
+      excerpt: "Exploring Raft and Paxos algorithms and their practical applications in modern distributed systems.",
+      content: `Distributed systems are the backbone of modern cloud infrastructure, but achieving consensus across multiple nodes remains one of computer science's most challenging problems.
+
+In this article, we'll dive deep into two fundamental consensus algorithms: Raft and Paxos. While Paxos has been the theoretical foundation for decades, Raft has gained popularity for its understandability and practical implementation.
+
+The CAP theorem tells us we can't have consistency, availability, and partition tolerance simultaneously. Consensus algorithms help us navigate these trade-offs intelligently.
+
+Raft simplifies the problem by electing a leader who manages all client requests. This asymmetry makes the algorithm easier to understand and implement compared to Paxos's more symmetric approach.
+
+We'll explore how these algorithms handle network partitions, leader elections, and log replication. Understanding these concepts is crucial for building reliable distributed systems that can withstand real-world failures.
+
+Modern databases like etcd and Consul use Raft under the hood, while Google's Spanner uses a Paxos variant. Knowing when to use each algorithm can make the difference between a system that scales gracefully and one that fails under load.`
+    },
+    {
+      id: 2,
+      title: "Optimizing React Performance: A Deep Dive",
+      date: "December 28, 2025",
+      readTime: "6 min read",
+      excerpt: "Advanced techniques to make your React applications blazing fast through memoization and code splitting.",
+      content: `React's virtual DOM is powerful, but it's not magic. Without proper optimization, even simple applications can become sluggish as they grow.
+
+The key to React performance lies in understanding when and why components re-render. Every state change triggers a re-render, but not every re-render needs to propagate through your entire component tree.
+
+React.memo is your first line of defense. By memoizing components, you prevent unnecessary re-renders when props haven't changed. But be careful—premature optimization can make your code harder to maintain without meaningful performance gains.
+
+useCallback and useMemo are equally important. Functions are recreated on every render, which can break memoization. Wrapping callbacks and expensive computations ensures referential equality across renders.
+
+Code splitting with React.lazy and Suspense allows you to load components on demand. This dramatically reduces initial bundle size, especially important for mobile users on slower connections.
+
+Virtual scrolling libraries like react-window can handle thousands of list items without performance degradation. Instead of rendering everything, they only render what's visible in the viewport.
+
+Profile first, optimize second. Use React DevTools Profiler to identify actual bottlenecks before refactoring. Many perceived performance issues are actually caused by network latency or inefficient algorithms, not React itself.`
+    },
+    {
+      id: 3,
+      title: "Building Scalable APIs with GraphQL",
+      date: "November 10, 2025",
+      readTime: "10 min read",
+      excerpt: "Why GraphQL is replacing REST for modern APIs and how to implement it effectively in production.",
+      content: `REST has served us well for decades, but modern applications demand more flexibility. GraphQL solves the over-fetching and under-fetching problems that plague REST APIs.
+
+With GraphQL, clients specify exactly what data they need. No more endpoints that return 80% unnecessary data or multiple round trips to assemble a single view.
+
+The schema is your contract. It documents your API, enables powerful tooling, and catches errors at compile time. Tools like GraphQL Code Generator can create TypeScript types directly from your schema.
+
+Resolvers are where the magic happens. Each field in your schema maps to a resolver function that knows how to fetch that data. This separation of concerns makes your API incredibly flexible.
+
+DataLoader solves the N+1 query problem through batching and caching. Without it, a simple query could trigger hundreds of database calls. With it, you batch requests and cache results within a single request context.
+
+Authentication and authorization in GraphQL require careful thought. Unlike REST where you can protect entire endpoints, GraphQL needs field-level security. Directives and middleware can enforce permissions at the resolver level.
+
+Subscriptions bring real-time capabilities to GraphQL. Using WebSockets, clients can subscribe to data changes and receive updates instantly. This is perfect for chat applications, live dashboards, and collaborative tools.
+
+Production GraphQL requires careful monitoring. Track query complexity, slow resolvers, and error rates. Tools like Apollo Studio provide observability into your GraphQL layer.`
+    }
+
+    
   ];
 
   const experience = [
@@ -180,7 +237,6 @@ const Portfolio = () => {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-8 pt-40 pb-32">
-
         {/* Home Page */}
         {currentPage === 'home' && (
           <div className="animate-fadeIn space-y-32">
@@ -359,7 +415,6 @@ const Portfolio = () => {
             </div>
           </div>
         )}
-
       </main>
 
       {/* Footer */}
