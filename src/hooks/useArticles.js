@@ -1,111 +1,62 @@
 import { useState, useEffect } from 'react';
-import MarkdownIt from 'markdown-it';
-
-const md = new MarkdownIt({
-  html: true,
-  linkify: true,
-  typographer: true,
-});
-
-// Simple frontmatter parser (no gray-matter needed)
-function parseFrontmatter(text) {
-  const lines = text.split('\n');
-  
-  // Check if starts with ---
-  if (lines[0] !== '---') {
-    return { data: {}, content: text };
-  }
-
-  let endIndex = -1;
-  for (let i = 1; i < lines.length; i++) {
-    if (lines[i] === '---') {
-      endIndex = i;
-      break;
-    }
-  }
-
-  if (endIndex === -1) {
-    return { data: {}, content: text };
-  }
-
-  const frontmatterLines = lines.slice(1, endIndex);
-  const content = lines.slice(endIndex + 1).join('\n');
-
-  const data = {};
-  for (const line of frontmatterLines) {
-    if (!line.trim()) continue;
-    
-    const colonIndex = line.indexOf(':');
-    if (colonIndex === -1) continue;
-    
-    const key = line.substring(0, colonIndex).trim();
-    let value = line.substring(colonIndex + 1).trim();
-    
-    // Remove quotes if present
-    if ((value.startsWith('"') && value.endsWith('"')) || 
-        (value.startsWith("'") && value.endsWith("'"))) {
-      value = value.slice(1, -1);
-    }
-    
-    // Parse booleans
-    if (value === 'true') value = true;
-    if (value === 'false') value = false;
-    
-    data[key] = value;
-  }
-
-  return { data, content };
-}
 
 export const useArticles = () => {
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
   useEffect(() => {
     const loadArticles = async () => {
       try {
-        // Fetch the markdown file
-        const response = await fetch('/articles/gender-labor-market.md');
-        
-        if (!response.ok) {
-          throw new Error(`Failed to load article: ${response.status} ${response.statusText}`);
-        }
+        // Import all markdown files from src/articles
+        const articleModules = import.meta.glob('../articles/*.md', { 
+          as: 'raw',
+          eager: true 
+        });
 
-        const markdown = await response.text();
-        console.log('✓ File fetched successfully');
+        const loadedArticles = Object.entries(articleModules).map(([path, content]) => {
+          // Extract frontmatter and content
+          const frontmatterRegex = /^---\s*\n([\s\S]*?)\n---\s*\n([\s\S]*)$/;
+          const match = content.match(frontmatterRegex);
 
-        // Parse frontmatter and content
-        const { data, content } = parseFrontmatter(markdown);
-        console.log('✓ Frontmatter parsed:', data);
+          if (!match) {
+            console.warn(`No frontmatter found in ${path}`);
+            return null;
+          }
 
-        // Convert markdown to HTML
-        const html = md.render(content);
-        console.log('✓ Markdown converted to HTML');
+          const [, frontmatter, markdown] = match;
+          
+          // Parse frontmatter
+          const meta = {};
+          frontmatter.split('\n').forEach(line => {
+            const [key, ...valueParts] = line.split(':');
+            if (key && valueParts.length) {
+              meta[key.trim()] = valueParts.join(':').trim().replace(/^["']|["']$/g, '');
+            }
+          });
 
-        const article = {
-          id: data.id || 1,
-          title: data.title || 'Untitled',
-          subtitle: data.subtitle || '',
-          date: data.date || new Date().toISOString(),
-          readTime: data.readTime || '5 min read',
-          author: data.author || 'Anonymous',
-          excerpt: data.excerpt || '',
-          category: data.category || 'General',
-          featured: data.featured !== false && data.featured !== 'false',
-          slug: 'gender-labor-market',
-          html: html,
-          content: content,
-          frontmatter: data,
-        };
+          // Get slug from filename
+          const slug = path.split('/').pop().replace('.md', '');
 
-        console.log('✓ Article object created:', article.title);
-        setArticles([article]);
-        setError(null);
-      } catch (err) {
-        console.error('✗ Error loading articles:', err.message);
-        setError(err.message);
-        setArticles([]);
+          // Convert markdown to HTML with better parsing
+          const html = parseMarkdown(markdown);
+
+          return {
+            slug,
+            title: meta.title || 'Untitled',
+            date: meta.date || new Date().toISOString(),
+            excerpt: meta.excerpt || '',
+            readTime: meta.readTime || '5 min read',
+            html,
+            ...meta
+          };
+        }).filter(Boolean);
+
+        // Sort by date (newest first)
+        loadedArticles.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        setArticles(loadedArticles);
+      } catch (error) {
+        console.error('Error loading articles:', error);
       } finally {
         setLoading(false);
       }
@@ -114,5 +65,64 @@ export const useArticles = () => {
     loadArticles();
   }, []);
 
-  return { articles, loading, error };
+  return { articles, loading };
 };
+
+// Enhanced markdown parser
+function parseMarkdown(markdown) {
+  let html = markdown;
+
+  // Convert images first (before paragraphs)
+  html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (match, alt, src) => {
+    return `<img src="${src}" alt="${alt}" class="w-full rounded-2xl my-8 border border-white/10" />`;
+  });
+
+  // Convert headings
+  html = html.replace(/^### (.*$)/gm, '<h3 class="text-2xl font-semibold text-white mt-12 mb-4">$1</h3>');
+  html = html.replace(/^## (.*$)/gm, '<h2 class="text-4xl font-semibold text-white mt-16 mb-6">$1</h2>');
+  html = html.replace(/^# (.*$)/gm, '<h1 class="text-5xl font-semibold text-white mt-12 mb-8">$1</h1>');
+
+  // Convert bold text
+  html = html.replace(/\*\*([^*]+)\*\*/g, '<strong class="text-white font-semibold">$1</strong>');
+
+  // Convert links
+  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-blue-400 hover:text-blue-300 underline">$1</a>');
+
+  // Convert unordered lists
+  html = html.replace(/^\s*[-*]\s+(.+)$/gm, '<li class="ml-6 mb-2">$1</li>');
+  html = html.replace(/(<li class="ml-6 mb-2">.*<\/li>\n?)+/g, (match) => {
+    return `<ul class="list-disc list-outside space-y-2 my-6">${match}</ul>`;
+  });
+
+  // Convert ordered lists
+  html = html.replace(/^\s*\d+\.\s+(.+)$/gm, '<li class="ml-6 mb-2">$1</li>');
+  html = html.replace(/(<li class="ml-6 mb-2">.*<\/li>\n?)+/g, (match) => {
+    // Check if it's already wrapped in ul (from unordered list)
+    if (!match.includes('<ul')) {
+      return `<ol class="list-decimal list-outside space-y-2 my-6">${match}</ol>`;
+    }
+    return match;
+  });
+
+  // Convert blockquotes
+  html = html.replace(/^> (.+)$/gm, '<blockquote class="border-l-4 border-neutral-600 pl-4 italic text-neutral-400 my-6">$1</blockquote>');
+
+  // Convert inline code
+  html = html.replace(/`([^`]+)`/g, '<code class="bg-neutral-900 text-orange-400 px-2 py-1 rounded text-sm">$1</code>');
+
+  // Convert paragraphs (anything not already wrapped)
+  html = html.split('\n\n').map(block => {
+    // Skip if already HTML
+    if (block.trim().startsWith('<')) {
+      return block;
+    }
+    // Skip empty blocks
+    if (block.trim() === '') {
+      return '';
+    }
+    // Wrap in paragraph
+    return `<p class="text-neutral-300 leading-relaxed mb-6">${block.trim()}</p>`;
+  }).join('\n');
+
+  return html;
+}

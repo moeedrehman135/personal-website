@@ -1,22 +1,18 @@
 ---
-title: Gender Vulnerability in Pakistan's Labor Market
+title: Gender Labor Market Vulnerability in Pakistan: A Comprehensive Analysis Through Global Shock Eras (1991-2024)
 date: 2026-02-13
 excerpt: An analysis of gender disparities in Pakistan's labor market and their socioeconomic impacts.
 readTime: 10 min read
 ---
 
-# Gender Labor Market Vulnerability in Pakistan: A Comprehensive Analysis Through Global Shock Eras (1991-2024) 
 
 ### An empirical examination of gendered labor market disparities using World Bank data 
 
----
 
 ## Executive Summary
 This analysis presents a novel Gender Labor Market Vulnerability Index for Pakistan, constructed using principal component analysis of seven key labor market indicators spanning 1991-2024 . The findings reveal a disturbing upward trajectory in gender-based vulnerability, with the index deteriorating from -2.82 in 1991 to 4.00 in 2024—a total shift of 6.82 standard deviations .
 
 The COVID-19 pandemic emerges as the most devastating shock for gender equity in Pakistan's labor market, far surpassing the impact of the 2008 financial crisis or the post-9/11 period . While female labor force participation has nearly doubled from 16.7% to 30.2% of male participation rates, this modest progress masks deepening structural inequalities in employment quality, vulnerability, and youth unemployment .
-
----
 
 ## Methodology
 
