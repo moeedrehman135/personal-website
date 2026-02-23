@@ -1,12 +1,8 @@
 ---
-id: 1
-title: "Gender Labor Market Vulnerability in Pakistan: A Comprehensive Analysis Through Global Shock Eras (1991-2024)"
-subtitle: "An empirical examination of gendered labor market disparities using World Bank data"
-date: "2026-02-10"
-readTime: "18 min read"
-author: "Moeed Rehman"
-excerpt: "Using principal component analysis on seven labor market indicators, this analysis reveals how Pakistan's gender labor market vulnerability has deteriorated by 6.82 standard deviations since 1991, with COVID-19 emerging as a catastrophic shock far exceeding previous crises."
-featured: true
+title: Gender Vulnerability in Pakistan's Labor Market
+date: 2026-02-13
+excerpt: An analysis of gender disparities in Pakistan's labor market and their socioeconomic impacts.
+readTime: 10 min read
 ---
 
 # Gender Labor Market Vulnerability in Pakistan: A Comprehensive Analysis Through Global Shock Eras (1991-2024) 
