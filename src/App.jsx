@@ -1,46 +1,48 @@
 import React, { useState, useEffect } from 'react';
 import { Github, Linkedin, Mail, ExternalLink, ArrowUpRight, ArrowLeft, Calendar, Clock, Loader } from 'lucide-react';
 import { useArticles } from './hooks/useArticles';
-import React, { useState, useEffect } from 'react';
-import * as mammoth from 'mammoth';
 
 // Article Detail Component
 const ArticleDetail = ({ article, onBack }) => {
-  const [contentHtml, setContentHtml] = useState(article.html || '');
-  const [isConverting, setIsConverting] = useState(!article.html && article.fileUrl);
-
-  useEffect(() => {
-    if (article.fileUrl && article.fileUrl.endsWith('.docx')) {
-      fetch(article.fileUrl)
-        .then(res => res.arrayBuffer())
-        .then(buffer => mammoth.convertToHtml({ arrayBuffer: buffer }))
-        .then(result => {
-          setContentHtml(result.value);
-          setIsConverting(false);
-        })
-        .catch(err => {
-          console.error(err);
-          setIsConverting(false);
-        });
-    }
-  }, [article]);
-
   return (
     <div className="animate-fadeIn">
-      <button onClick={onBack} className="flex items-center gap-2 text-neutral-500 hover:text-neutral-300 mb-16 transition-colors">
-        <ArrowLeft size={20} /> <span>Back to Articles</span>
+      <button 
+        onClick={onBack}
+        className="flex items-center gap-2 text-neutral-500 hover:text-neutral-300 transition-colors mb-16 group"
+      >
+        <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
+        <span className="font-medium">Back to Articles</span>
       </button>
+      
       <article className="max-w-3xl">
-        <h1 className="text-5xl font-semibold text-white mb-6">{article.title}</h1>
-        <div className="prose prose-invert max-w-none">
-          {isConverting ? (
-            <div className="flex gap-2 text-neutral-400"><Loader className="animate-spin" /> Loading document...</div>
-          ) : (
-            <div 
-              className="text-neutral-300 leading-relaxed space-y-6 text-lg"
-              dangerouslySetInnerHTML={{ __html: contentHtml }} 
-            />
+        <div className="mb-12">
+          <div className="flex gap-6 text-sm text-neutral-500 mb-6">
+            <span className="flex items-center gap-2">
+              <Calendar size={16} />
+              {new Date(article.date).toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+              })}
+            </span>
+            <span className="flex items-center gap-2">
+              <Clock size={16} />
+              {article.readTime || '10 min read'}
+            </span>
+          </div>
+          <h1 className="text-5xl md:text-6xl font-semibold text-white mb-6 leading-tight tracking-tight">
+            {article.title}
+          </h1>
+          {article.subtitle && (
+            <p className="text-xl text-neutral-400">{article.subtitle}</p>
           )}
+        </div>
+
+        <div className="prose prose-invert max-w-none">
+          <div 
+            className="text-neutral-300 leading-relaxed space-y-6 text-lg prose prose-invert prose-headings:text-white prose-headings:font-semibold prose-p:leading-7 prose-a:text-blue-400 prose-a:hover:text-blue-300 prose-strong:text-white prose-code:text-orange-400 prose-code:bg-black/50 prose-code:px-2 prose-code:py-1 prose-code:rounded prose-blockquote:border-l-4 prose-blockquote:border-neutral-600 prose-blockquote:pl-4"
+            dangerouslySetInnerHTML={{ __html: article.html }}
+          />
         </div>
       </article>
     </div>
