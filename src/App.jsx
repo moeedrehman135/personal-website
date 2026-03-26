@@ -50,7 +50,7 @@ const ArticleDetail = ({ article, onBack }) => {
 };
 
 const Portfolio = () => {
-  const [currentPage, setCurrentPage] = useState('home');
+  const [currentPage, setCurrentPage] = useState(() => {const path = window.location.pathname.replace('/', '');return path || 'home';});
   const [selectedArticle, setSelectedArticle] = useState(null);
   const [scrolled, setScrolled] = useState(false);
   const { articles, loading: articlesLoading } = useArticles();
